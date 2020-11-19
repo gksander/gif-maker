@@ -26,6 +26,12 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({
   hasFile,
   outputFileType,
   setOutputFileType,
+  filename,
+  setFilename,
+  size,
+  setSize,
+  fps,
+  setFps,
 }) => {
   if (!hasFile) return <div>Choose file first!</div>;
 
@@ -48,6 +54,35 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({
           ))}
         </select>
       </div>
+      {/* Filename */}
+      <div>
+        Filename (no ext):{" "}
+        <input
+          type="text"
+          value={filename}
+          onChange={e => setFilename(e.target.value)}
+        />
+      </div>
+      {outputFileType.ext === "gif" && (
+        <div>
+          <div>
+            Size:{" "}
+            <input
+              type="number"
+              value={size}
+              onChange={e => setSize(e.target.value)}
+            />
+          </div>
+          <div>
+            FPS:{" "}
+            <input
+              type="number"
+              value={fps}
+              onChange={e => setFps(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -35,6 +35,7 @@ export const ConvertPage: React.FC<ConvertPageProps> = ({
               ) : (
                 <video src={outputUrl} width="250" controls />
               )}
+              <div>Size: {outputSize} mb</div>
               <button onClick={downloadFile}>Download!</button>
             </div>
           </div>
