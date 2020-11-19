@@ -1,6 +1,10 @@
 import * as React from "react";
 import { Dispatch, SetStateAction } from "react";
 import { FileExt, FileTypeConfig, FileTypes } from "../consts";
+import { PageTitle } from "../components/PageTitle";
+import { Spacer } from "../components/Spacer";
+import { FancySelect } from "../components/FancySelect";
+import { FancyInput } from "../components/FancyInput";
 
 type UseStateSetter<T> = Dispatch<SetStateAction<T>>;
 
@@ -33,55 +37,39 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({
   fps,
   setFps,
 }) => {
+  // S TODO: Need a generic thing for this.
   if (!hasFile) return <div>Choose file first!</div>;
 
   return (
     <div>
-      {/* File Type Selection */}
-      <div>
-        <select
-          value={outputFileType?.ext}
-          onChange={e =>
-            setOutputFileType(
-              FileTypes.find(t => t.ext === e.target.value) || FileTypes[0],
-            )
-          }
-        >
-          {FileTypes.map(type => (
-            <option key={type.ext} value={type.ext}>
-              {type.title}
-            </option>
-          ))}
-        </select>
-      </div>
-      {/* Filename */}
-      <div>
-        Filename (no ext):{" "}
-        <input
-          type="text"
-          value={filename}
-          onChange={e => setFilename(e.target.value)}
-        />
-      </div>
+      <PageTitle>Conversion Options</PageTitle>
+      <Spacer />
+      <FancySelect
+        title="File Type"
+        options={FileTypes.map(t => ({ title: t.title, value: t.ext }))}
+        value={outputFileType.ext}
+        onSelect={v =>
+          setOutputFileType(FileTypes.find(t => t.ext === v) || FileTypes[0])
+        }
+      />
       {outputFileType.ext === "gif" && (
-        <div>
-          <div>
-            Size:{" "}
-            <input
+        <React.Fragment>
+          <Spacer size="lg" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FancyInput
+              title="Size (px)"
               type="number"
               value={size}
-              onChange={e => setSize(e.target.value)}
+              onChange={e => setSize((e.target as HTMLInputElement).value)}
             />
-          </div>
-          <div>
-            FPS:{" "}
-            <input
+            <FancyInput
+              title="FPS"
               type="number"
               value={fps}
-              onChange={e => setFps(e.target.value)}
+              onChange={e => setFps((e.target as HTMLInputElement).value)}
             />
           </div>
-        </div>
+        </React.Fragment>
       )}
     </div>
   );

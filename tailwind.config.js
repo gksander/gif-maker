@@ -16,7 +16,7 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/forms")],
   purge: {
     content: ["./src/**/*.html", "./public/index.html", "./src/**/*.tsx"],
   },

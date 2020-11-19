@@ -48,13 +48,13 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
         <div className="container max-w-3xl py-8 px-2">
-          <div className="text-5xl">Video Converter</div>
+          <div className="text-5xl font-bold">Video Converter</div>
         </div>
       </div>
       <div className="container max-w-3xl px-2 -my-24">
         <div className="bg-white rounded shadow">
           <HeaderNav hasFile={!!videoFile} />
-          <div className="p-3">
+          <div className="p-4">
             <Switch>
               <Route path={ROUTES.CHOOSE_FILE}>
                 <ChooseFilePage
