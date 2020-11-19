@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   // Local state
   const [size, setSize] = React.useState("250");
   const [fps, setFps] = React.useState("30");
+  const [outputFileType, setOutputFileType] = React.useState<FileTypeConfig>(
     FileTypes[0],
   );
   const [filename, setFilename] = React.useState("mygif");
