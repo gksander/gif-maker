@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Route, Switch, Link } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import { ROUTES } from "./routes";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import { HomePage } from "./pages/Home.page";
@@ -7,14 +7,9 @@ import { ChooseFilePage } from "./pages/ChooseFile.page";
 import { OptionsPage } from "./pages/Options.page";
 import { ConvertPage } from "./pages/Convert.page";
 import { FileTypeConfig, FileTypes } from "./consts";
+import { HeaderNav } from "./components/HeaderNav";
 
 const ffmpeg = createFFmpeg({ log: true });
-
-const links: { title: string; to: string }[] = [
-  { title: "Choose file", to: ROUTES.CHOOSE_FILE },
-  { title: "Options", to: ROUTES.CONVERSION_OPTIONS },
-  { title: "Convert", to: ROUTES.CONVERT },
-];
 
 /**
  * Our actual App
@@ -29,7 +24,7 @@ export const App: React.FC = () => {
   const [filename, setFilename] = React.useState("mygif");
 
   // Util
-  const isFFMPEGReady = useLoadFFMPEG();
+  // const isFFMPEGReady = useLoadFFMPEG();
   const { videoUrl, onFileInputChange, videoFile } = useLoadVideo();
 
   // Gif Handling
@@ -46,28 +41,19 @@ export const App: React.FC = () => {
   });
 
   // Loading screen while we wait for FFMPEG?
-  if (!isFFMPEGReady) return <div>LOADING!</div>;
+  // if (!isFFMPEGReady) return <div>LOADING!</div>;
 
   // Main markup
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-purple-700 text-white font-thin pb-24">
+      <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
         <div className="container max-w-3xl py-8 px-2">
           <div className="text-5xl">Video Converter</div>
         </div>
       </div>
       <div className="container max-w-3xl px-2 -my-24">
         <div className="bg-white rounded shadow">
-          <div className="border-b flex">
-            <Link to={ROUTES.HOME} className="p-2">
-              Home
-            </Link>
-            {links.map((link, _i) => (
-              <Link to={link.to} key={link.to} className="p-2">
-                {link.title}
-              </Link>
-            ))}
-          </div>
+          <HeaderNav hasFile={!!videoFile} />
           <div className="p-3">
             <Switch>
               <Route path={ROUTES.CHOOSE_FILE}>
