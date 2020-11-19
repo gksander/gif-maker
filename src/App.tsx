@@ -1,55 +1,109 @@
 import * as React from "react";
+import { Grid, GridItem } from "@chakra-ui/react";
+import { Route, Switch } from "react-router-dom";
+import { Header } from "./components/Header";
+import { ROUTES } from "./routes";
+import { GifPage } from "./pages/Gif.page";
+import { Mp4Page } from "./pages/Mp4.page";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { ChakraProvider, Grid, theme, GridItem } from "@chakra-ui/react";
 
-// Util
 const ffmpeg = createFFmpeg({ log: true });
 
 /**
  * Our actual App
  */
 export const App: React.FC = () => {
+  // Local state
+  const [size, setSize] = React.useState("250");
+  const [fps, setFps] = React.useState("30");
+  const [filename, setFilename] = React.useState("mygif");
+
+  // Util
   const isFFMPEGReady = useLoadFFMPEG();
   const { videoUrl, onFileInputChange, videoFile } = useLoadVideo();
-  const { gifUrl, gifSize, convertToGif } = useConvertToGif({
-    file: videoFile,
-  });
-  const downloadFile = useDownloadFile({ gifUrl, filename: "mygif.gif" });
 
+  // Gif Handling
+  const {
+    convert: convertToGif,
+    isConverting,
+    outputUrl: gifUrl,
+    outputSize: gifSize,
+  } = useConvertFile({
+    file: videoFile,
+    size,
+    fps,
+    ext: "gif",
+  });
+  const downloadGif = useDownloadFile({ filename, url: gifUrl, ext: "gif" });
+
+  // Mp4 Handling
+  // Gif Handling
+  const {
+    convert: convertToMp4,
+    isConverting: isConvertingMp4,
+    outputUrl: mp4Url,
+    outputSize: mp4Size,
+  } = useConvertFile({
+    file: videoFile,
+    size,
+    fps,
+    ext: "mp4",
+  });
+  const downloadMp4 = useDownloadFile({ filename, url: mp4Url, ext: "mp4" });
+
+  // Loading screen while we wait for FFMPEG?
   if (!isFFMPEGReady) return <div>LOADING!</div>;
 
+  // Main markup
   return (
-    <ChakraProvider theme={theme}>
+    <React.Fragment>
+      <Header />
       <Grid gap={6} templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)"]}>
         <GridItem>
           {videoUrl && <video controls width="250" src={videoUrl} />}
           <input type="file" onChange={onFileInputChange} />
         </GridItem>
         <GridItem>
-          {videoUrl ? (
-            <div>
-              <button onClick={convertToGif}>Convert!</button>
-              {gifUrl && (
-                <div>
-                  <img src={gifUrl} width="250" />
-                  <p>Gif size: {gifSize} bytes</p>
-                  <button onClick={downloadFile}>Download</button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>Upload video first</div>
-          )}
+          <Switch>
+            <Route path={ROUTES.MP4}>
+              <Mp4Page
+                hasFile={!!videoFile}
+                isConverting={isConvertingMp4}
+                convert={convertToMp4}
+                download={downloadMp4}
+                mp4Url={mp4Url}
+                mp4Size={mp4Size}
+                filename={filename}
+                setFilename={setFilename}
+              />
+            </Route>
+            <Route path={ROUTES.HOME}>
+              <GifPage
+                hasFile={!!videoFile}
+                convert={convertToGif}
+                downloadFile={downloadGif}
+                gifUrl={gifUrl}
+                gifSize={gifSize}
+                isConverting={isConverting}
+                size={size}
+                setSize={setSize}
+                fps={fps}
+                setFps={setFps}
+                filename={filename}
+                setFilename={setFilename}
+              />
+            </Route>
+          </Switch>
         </GridItem>
       </Grid>
-    </ChakraProvider>
+    </React.Fragment>
   );
 };
 
 /**
  * Load in FFMPEG
  */
-const useLoadFFMPEG = () => {
+export const useLoadFFMPEG = () => {
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
@@ -67,7 +121,7 @@ const useLoadFFMPEG = () => {
 /**
  * Handle loading video
  */
-const useLoadVideo = () => {
+export const useLoadVideo = () => {
   const [videoFile, setVideoFile] = React.useState<File | null>(null);
   const [videoUrl, setVideoUrl] = React.useState("");
 
@@ -95,14 +149,34 @@ const useLoadVideo = () => {
 /**
  * Hook for converting to GIF
  */
-const useConvertToGif = ({ file }: { file: File | null }) => {
+export const useConvertFile = ({
+  file,
+  size,
+  fps,
+  ext,
+}: {
+  file: File | null;
+  size: string;
+  fps: string;
+  ext: string;
+}) => {
   const [isConverting, setIsConverting] = React.useState(false);
-  const [gifBlob, setGifBlob] = React.useState<Blob | null>(null);
-  const [gifUrl, setGifUrl] = React.useState("");
-  const [gifSize, setGifSize] = React.useState(0);
+  const [outputBlob, setOutputBlob] = React.useState<Blob | null>(null);
+  const [outputUrl, setOutputUrl] = React.useState("");
+  const [outputSize, setOutputSize] = React.useState(0);
+
+  // Cleaned values
+  const cleanedSize = React.useMemo(() => {
+    const s = parseInt(size) || 0;
+    return s <= 0 ? 200 : s;
+  }, [size]);
+  const cleanedFps = React.useMemo(() => {
+    const f = parseInt(fps) || 0;
+    return f <= 0 ? 15 : f;
+  }, [fps]);
 
   // Method to convert
-  const convertToGif = React.useCallback(async () => {
+  const convert = React.useCallback(async () => {
     if (!file || isConverting) return;
 
     setIsConverting(true);
@@ -111,59 +185,83 @@ const useConvertToGif = ({ file }: { file: File | null }) => {
       // Write the file to memory (so FFMPEG can operate on it)
       await ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
 
-      // Run the convert command
-      await ffmpeg.run("-i", "input.mp4", "-f", "gif", "output.gif");
+      const outputFileName = `output.${ext}`;
+      const outputFileType = /gif/i.test(ext) ? "image/gif" : "video/mp4";
+
+      if (/gif/i.test(ext)) {
+        // Run the convert command
+        await ffmpeg.run(
+          "-i",
+          "input.mp4",
+          "-vf",
+          `fps=${cleanedFps},scale=${cleanedSize}:-1`,
+          outputFileName,
+        );
+      } else if (/mp4/i.test(ext)) {
+        await ffmpeg.run("-i", "input.mp4", outputFileName);
+      }
 
       // Read the result
-      const data = ffmpeg.FS("readFile", "output.gif");
-      setGifBlob(new Blob([data.buffer], { type: "image/gif" }));
+      const data = ffmpeg.FS("readFile", outputFileName);
+      setOutputBlob(new Blob([data.buffer], { type: outputFileType }));
 
       // Get the size
-      setGifSize((await ffmpeg.FS("stat", "output.gif")?.size) || 0);
+      setOutputSize(
+        ((await ffmpeg.FS("stat", outputFileName)?.size) || 0) /
+          Math.pow(10, 6),
+      );
     } catch (e) {
       console.log(e);
     }
 
     setIsConverting(false);
-  }, [file, isConverting]);
+  }, [cleanedFps, cleanedSize, file, isConverting]);
 
   // Managing image url
   React.useEffect(() => {
-    if (gifBlob) {
-      const url = URL.createObjectURL(gifBlob);
-      setGifUrl(url);
+    if (outputBlob) {
+      const url = URL.createObjectURL(outputBlob);
+      setOutputUrl(url);
 
       return () => {
         URL.revokeObjectURL(url);
       };
     } else {
-      setGifUrl("");
+      setOutputUrl("");
     }
-  }, [gifBlob]);
+  }, [outputBlob]);
 
   // If file changes, we should wipe this data.
   React.useEffect(() => {
     if (file) {
-      setGifBlob(null);
-      setGifSize(0); // S TODO: This could be its own effect
+      setOutputBlob(null);
+      setOutputSize(0); // S TODO: This could be its own effect
     }
   }, [file]);
 
-  return { convertToGif, isConverting, gifUrl, gifSize };
+  return { convert, isConverting, outputUrl, outputSize };
 };
 
 /**
  * Method to download file
  */
-const useDownloadFile = ({ gifUrl = "", filename = "" }) => {
+export const useDownloadFile = ({
+  filename,
+  url,
+  ext,
+}: {
+  filename: string;
+  ext: string;
+  url: string;
+}) => {
   return React.useCallback(() => {
     const link = document.createElement("a");
-    link.href = gifUrl;
-    link.download = filename;
+    link.href = url;
+    link.download = `${filename}.${ext}`;
 
     document.body.appendChild(link);
     link.dispatchEvent(new MouseEvent("click", { bubbles: false }));
 
     document.body.removeChild(link);
-  }, [filename, gifUrl]);
+  }, [ext, filename, url]);
 };
