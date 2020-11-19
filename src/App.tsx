@@ -1,15 +1,12 @@
 import * as React from "react";
 import { Route, Switch, Link } from "react-router-dom";
-import { Header } from "./components/Header";
 import { ROUTES } from "./routes";
-import { GifPage } from "./pages/Gif.page";
-import { Mp4Page } from "./pages/Mp4.page";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import { HomePage } from "./pages/Home.page";
 import { ChooseFilePage } from "./pages/ChooseFile.page";
 import { OptionsPage } from "./pages/Options.page";
 import { ConvertPage } from "./pages/Convert.page";
-import { FileExt, FileTypeConfig, FileTypes } from "./consts";
+import { FileTypeConfig, FileTypes } from "./consts";
 
 const ffmpeg = createFFmpeg({ log: true });
 
