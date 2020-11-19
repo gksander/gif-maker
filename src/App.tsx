@@ -24,8 +24,8 @@ export const App: React.FC = () => {
   const [filename, setFilename] = React.useState("mygif");
 
   // Util
-  // const isFFMPEGReady = useLoadFFMPEG();
-  const { videoUrl, onFileInputChange, videoFile } = useLoadVideo();
+  const isFFMPEGReady = useLoadFFMPEG();
+  const { videoUrl, setVideoFile, videoFile } = useLoadVideo();
 
   // Gif Handling
   const { convert, isConverting, outputUrl, outputSize } = useConvertFile({
@@ -40,14 +40,11 @@ export const App: React.FC = () => {
     ext: outputFileType.ext,
   });
 
-  // Loading screen while we wait for FFMPEG?
-  // if (!isFFMPEGReady) return <div>LOADING!</div>;
-
   // Main markup
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
-        <div className="container max-w-3xl py-8 px-2">
+        <div className="container max-w-3xl py-12 px-2">
           <div className="text-5xl font-bold">Video Converter</div>
         </div>
       </div>
@@ -59,7 +56,7 @@ export const App: React.FC = () => {
               <Route path={ROUTES.CHOOSE_FILE}>
                 <ChooseFilePage
                   videoUrl={videoUrl}
-                  onFileInputChange={onFileInputChange}
+                  setVideoFile={setVideoFile}
                 />
               </Route>
               <Route path={ROUTES.CONVERSION_OPTIONS}>
@@ -87,6 +84,7 @@ export const App: React.FC = () => {
                     outputFileType,
                     isConverting,
                     downloadFile,
+                    isFFMPEGReady,
                   }}
                 />
               </Route>
@@ -139,12 +137,7 @@ export const useLoadVideo = () => {
     }
   }, [videoFile]);
 
-  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.item(0);
-    if (file) setVideoFile(file);
-  };
-
-  return { onFileInputChange, videoFile, videoUrl };
+  return { videoFile, setVideoFile, videoUrl };
 };
 
 /**
