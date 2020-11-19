@@ -1,13 +1,23 @@
 import * as React from "react";
-import { Grid, GridItem } from "@chakra-ui/react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Link } from "react-router-dom";
 import { Header } from "./components/Header";
 import { ROUTES } from "./routes";
 import { GifPage } from "./pages/Gif.page";
 import { Mp4Page } from "./pages/Mp4.page";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import { HomePage } from "./pages/Home.page";
+import { ChooseFilePage } from "./pages/ChooseFile.page";
+import { OptionsPage } from "./pages/Options.page";
+import { ConvertPage } from "./pages/Convert.page";
+import { FileExt, FileTypeConfig, FileTypes } from "./consts";
 
 const ffmpeg = createFFmpeg({ log: true });
+
+const links: { title: string; to: string }[] = [
+  { title: "Choose file", to: ROUTES.CHOOSE_FILE },
+  { title: "Options", to: ROUTES.CONVERSION_OPTIONS },
+  { title: "Convert", to: ROUTES.CONVERT },
+];
 
 /**
  * Our actual App
@@ -16,6 +26,8 @@ export const App: React.FC = () => {
   // Local state
   const [size, setSize] = React.useState("250");
   const [fps, setFps] = React.useState("30");
+    FileTypes[0],
+  );
   const [filename, setFilename] = React.useState("mygif");
 
   // Util
@@ -23,80 +35,84 @@ export const App: React.FC = () => {
   const { videoUrl, onFileInputChange, videoFile } = useLoadVideo();
 
   // Gif Handling
-  const {
-    convert: convertToGif,
-    isConverting,
-    outputUrl: gifUrl,
-    outputSize: gifSize,
-  } = useConvertFile({
+  const { convert, isConverting, outputUrl, outputSize } = useConvertFile({
     file: videoFile,
     size,
     fps,
-    ext: "gif",
+    outputFileType,
   });
-  const downloadGif = useDownloadFile({ filename, url: gifUrl, ext: "gif" });
-
-  // Mp4 Handling
-  // Gif Handling
-  const {
-    convert: convertToMp4,
-    isConverting: isConvertingMp4,
-    outputUrl: mp4Url,
-    outputSize: mp4Size,
-  } = useConvertFile({
-    file: videoFile,
-    size,
-    fps,
-    ext: "mp4",
+  const downloadFile = useDownloadFile({
+    filename,
+    url: outputUrl,
+    ext: outputFileType.ext,
   });
-  const downloadMp4 = useDownloadFile({ filename, url: mp4Url, ext: "mp4" });
 
   // Loading screen while we wait for FFMPEG?
   if (!isFFMPEGReady) return <div>LOADING!</div>;
 
   // Main markup
   return (
-    <React.Fragment>
-      <Header />
-      <Grid gap={6} templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)"]}>
-        <GridItem>
-          {videoUrl && <video controls width="250" src={videoUrl} />}
-          <input type="file" onChange={onFileInputChange} />
-        </GridItem>
-        <GridItem>
-          <Switch>
-            <Route path={ROUTES.MP4}>
-              <Mp4Page
-                hasFile={!!videoFile}
-                isConverting={isConvertingMp4}
-                convert={convertToMp4}
-                download={downloadMp4}
-                mp4Url={mp4Url}
-                mp4Size={mp4Size}
-                filename={filename}
-                setFilename={setFilename}
-              />
-            </Route>
-            <Route path={ROUTES.HOME}>
-              <GifPage
-                hasFile={!!videoFile}
-                convert={convertToGif}
-                downloadFile={downloadGif}
-                gifUrl={gifUrl}
-                gifSize={gifSize}
-                isConverting={isConverting}
-                size={size}
-                setSize={setSize}
-                fps={fps}
-                setFps={setFps}
-                filename={filename}
-                setFilename={setFilename}
-              />
-            </Route>
-          </Switch>
-        </GridItem>
-      </Grid>
-    </React.Fragment>
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-purple-700 text-white font-thin pb-24">
+        <div className="container max-w-3xl py-8 px-2">
+          <div className="text-5xl">Video Converter</div>
+        </div>
+      </div>
+      <div className="container max-w-3xl px-2 -my-24">
+        <div className="bg-white rounded shadow">
+          <div className="border-b flex">
+            <Link to={ROUTES.HOME} className="p-2">
+              Home
+            </Link>
+            {links.map((link, _i) => (
+              <Link to={link.to} key={link.to} className="p-2">
+                {link.title}
+              </Link>
+            ))}
+          </div>
+          <div className="p-3">
+            <Switch>
+              <Route path={ROUTES.CHOOSE_FILE}>
+                <ChooseFilePage
+                  videoUrl={videoUrl}
+                  onFileInputChange={onFileInputChange}
+                />
+              </Route>
+              <Route path={ROUTES.CONVERSION_OPTIONS}>
+                <OptionsPage
+                  hasFile={!!videoFile}
+                  {...{
+                    outputFileType,
+                    setOutputFileType,
+                    size,
+                    setSize,
+                    fps,
+                    setFps,
+                    filename,
+                    setFilename,
+                  }}
+                />
+              </Route>
+              <Route path={ROUTES.CONVERT}>
+                <ConvertPage
+                  hasFile={!!videoFile}
+                  {...{
+                    convert,
+                    outputUrl,
+                    outputSize,
+                    outputFileType,
+                    isConverting,
+                  }}
+                />
+              </Route>
+              <Route path={ROUTES.HOME}>
+                <HomePage />
+              </Route>
+            </Switch>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -153,12 +169,12 @@ export const useConvertFile = ({
   file,
   size,
   fps,
-  ext,
+  outputFileType,
 }: {
   file: File | null;
   size: string;
   fps: string;
-  ext: string;
+  outputFileType: FileTypeConfig;
 }) => {
   const [isConverting, setIsConverting] = React.useState(false);
   const [outputBlob, setOutputBlob] = React.useState<Blob | null>(null);
@@ -185,8 +201,8 @@ export const useConvertFile = ({
       // Write the file to memory (so FFMPEG can operate on it)
       await ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
 
+      const ext = outputFileType.ext;
       const outputFileName = `output.${ext}`;
-      const outputFileType = /gif/i.test(ext) ? "image/gif" : "video/mp4";
 
       if (/gif/i.test(ext)) {
         // Run the convert command
@@ -203,7 +219,7 @@ export const useConvertFile = ({
 
       // Read the result
       const data = ffmpeg.FS("readFile", outputFileName);
-      setOutputBlob(new Blob([data.buffer], { type: outputFileType }));
+      setOutputBlob(new Blob([data.buffer], { type: outputFileType.mimeType }));
 
       // Get the size
       setOutputSize(
@@ -215,7 +231,7 @@ export const useConvertFile = ({
     }
 
     setIsConverting(false);
-  }, [cleanedFps, cleanedSize, file, isConverting]);
+  }, [cleanedFps, cleanedSize, outputFileType, file, isConverting]);
 
   // Managing image url
   React.useEffect(() => {

@@ -4,10 +4,18 @@ import { ROUTES } from "../routes";
 
 export const Header: React.FC = () => {
   return (
-    <nav>
-      <div>GifMaker</div>
-      <Link to={ROUTES.GIF}>GIF</Link>
-      <Link to={ROUTES.MP4}>MP4</Link>
+    <nav className="flex justify-between items-center bg-blue-100">
+      <Link to={ROUTES.HOME} className="p-2">
+        GifMaker
+      </Link>
+      <div>
+        <Link to={ROUTES.GIF} className="p-2">
+          GIF
+        </Link>
+        <Link to={ROUTES.MP4} className="p-2">
+          MP4
+        </Link>
+      </div>
     </nav>
   );
 };

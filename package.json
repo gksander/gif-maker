@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@chakra-ui/react": "^1.0.0-rc.5",
-    "@emotion/react": "^11.1.1",
-    "@emotion/styled": "^11.0.0",
     "@ffmpeg/core": "^0.8.4",
     "@ffmpeg/ffmpeg": "^0.9.5",
     "@testing-library/jest-dom": "^5.9.0",
@@ -15,20 +12,27 @@
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
+    "autoprefixer": "^10.0.2",
     "framer-motion": "^2.9.4",
+    "postcss": "^8.1.7",
+    "postcss-cli": "^8.3.0",
+    "postcss-loader": "^4.1.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-icons": "^3.0.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
+    "tailwindcss": "^2.0.1",
     "typescript": "^3.9.5",
     "web-vitals": "^0.2.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "concurrently \"react-scripts start\" \"yarn watch:css\"",
+    "build": "yarn build:css && yarn react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:css": "NODE_ENV=production postcss src/styles/tailwind.css -o src/styles/index.css",
+    "watch:css": "NODE_ENV=development postcss src/styles/tailwind.css -o src/styles/index.css --watch"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -47,6 +51,7 @@
   },
   "devDependencies": {
     "@types/react-router-dom": "^5.1.6",
+    "concurrently": "^5.3.0",
     "prettier": "^2.1.2"
   }
 }
