@@ -4,6 +4,7 @@ import { FileTypeConfig } from "../consts";
 type ConvertPageProps = {
   hasFile: boolean;
   convert: () => void;
+  downloadFile: () => void;
   isConverting: boolean;
   outputUrl: string;
   outputSize: number;
@@ -17,6 +18,7 @@ export const ConvertPage: React.FC<ConvertPageProps> = ({
   isConverting,
   outputUrl,
   outputSize,
+  downloadFile,
 }) => {
   if (!hasFile) return <div>Choose file first</div>;
 
@@ -27,11 +29,14 @@ export const ConvertPage: React.FC<ConvertPageProps> = ({
         {isConverting && <div>Converting</div>}
         {outputUrl && (
           <div>
-            {outputFileType.ext === "gif" ? (
-              <img src={outputUrl} width="250" />
-            ) : (
-              <video src={outputUrl} width="250" controls />
-            )}
+            <div>
+              {outputFileType.ext === "gif" ? (
+                <img src={outputUrl} width="250" />
+              ) : (
+                <video src={outputUrl} width="250" controls />
+              )}
+              <button onClick={downloadFile}>Download!</button>
+            </div>
           </div>
         )}
       </div>

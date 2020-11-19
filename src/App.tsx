@@ -103,6 +103,7 @@ export const App: React.FC = () => {
                     outputSize,
                     outputFileType,
                     isConverting,
+                    downloadFile,
                   }}
                 />
               </Route>
