@@ -87,7 +87,7 @@ export const App: React.FC = () => {
           document.body.removeChild(link);
         };
 
-        // downloadFile();
+        downloadFile();
       } catch {
       } finally {
         URL.revokeObjectURL(outputUrl);
@@ -223,11 +223,7 @@ export const App: React.FC = () => {
                     </motion.div>
                     <Spacer />
                     <div className="font-bold text-primary-700">
-                      {isDragActive ? (
-                        <span>Drop file</span>
-                      ) : (
-                        <span>Choose file</span>
-                      )}
+                      Drop a file here
                     </div>
                   </React.Fragment>
                 )}

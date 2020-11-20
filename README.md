@@ -7,3 +7,4 @@
 - [ ] Better DnD UI.
 - [ ] Store preference values in LocalStorage
 - [ ] PWA support
+- [ ] Toast indicator when successfully downloaded
