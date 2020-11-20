@@ -2,7 +2,6 @@ import * as React from "react";
 import { FileTypeConfig } from "../consts";
 import { PageTitle } from "../components/PageTitle";
 import { Spacer } from "../components/Spacer";
-import { Button } from "../components/Button";
 import { PageWrapper } from "../components/PageWrapper";
 import { Redirect } from "react-router-dom";
 import { ROUTES } from "../routes";
@@ -29,7 +28,6 @@ export const ConvertPage: React.FC<ConvertPageProps> = ({
   convert,
   isConverting,
   outputUrl,
-  outputSize,
   downloadFile,
   isFFMPEGReady,
   filename,

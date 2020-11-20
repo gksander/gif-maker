@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dispatch, SetStateAction } from "react";
-import { FileExt, FileTypeConfig, FileTypes } from "../consts";
+import { FileTypeConfig, FileTypes } from "../consts";
 import { PageTitle } from "../components/PageTitle";
 import { Spacer } from "../components/Spacer";
 import { FancySelect } from "../components/FancySelect";
@@ -25,8 +25,6 @@ type OptionsPageProps = {
   setFilename: UseStateSetter<string>;
 };
 
-const EXTS: FileExt[] = ["gif", "mp4"];
-
 /**
  * Options page
  */
@@ -34,8 +32,6 @@ export const OptionsPage: React.FC<OptionsPageProps> = ({
   hasFile,
   outputFileType,
   setOutputFileType,
-  filename,
-  setFilename,
   size,
   setSize,
   fps,

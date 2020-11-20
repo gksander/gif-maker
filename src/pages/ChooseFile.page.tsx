@@ -4,7 +4,7 @@ import { Spacer } from "../components/Spacer";
 import { useDropzone } from "react-dropzone";
 import classNames from "classnames";
 import { FaFileImport } from "react-icons/all";
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { PageWrapper } from "../components/PageWrapper";
 
 type ChooseFilePageProps = {
