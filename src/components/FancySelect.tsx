@@ -15,7 +15,10 @@ export const FancySelect: React.FC<FancySelectProps> = ({
 }) => {
   return (
     <div>
-      <label htmlFor="location" className="block font-medium text-gray-700">
+      <label
+        htmlFor="location"
+        className="block text-sm font-medium text-gray-700"
+      >
         {title}
       </label>
       <select

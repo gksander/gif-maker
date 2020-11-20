@@ -8,7 +8,15 @@ import { OptionsPage } from "./pages/Options.page";
 import { ConvertPage } from "./pages/Convert.page";
 import { FileTypeConfig, FileTypes } from "./consts";
 import { HeaderNav } from "./components/HeaderNav";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { PageTitle } from "./components/PageTitle";
+import { Spacer } from "./components/Spacer";
+import { FancySelect } from "./components/FancySelect";
+import { FancyInput } from "./components/FancyInput";
+import { PageWrapper } from "./components/PageWrapper";
+import { useDropzone } from "react-dropzone";
+import classNames from "classnames";
+import { FaFileImport } from "react-icons/all";
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -23,22 +31,100 @@ export const App: React.FC = () => {
     FileTypes[0],
   );
   const [filename, setFilename] = React.useState("myfile");
+  const [isConverting, setIsConverting] = React.useState(false);
 
   // Util
   const isFFMPEGReady = useLoadFFMPEG();
   const { videoUrl, setVideoFile, videoFile } = useLoadVideo();
 
   // Gif Handling
-  const { convert, isConverting, outputUrl, outputSize } = useConvertFile({
-    file: videoFile,
-    size,
-    fps,
-    outputFileType,
-  });
-  const downloadFile = useDownloadFile({
-    filename,
-    url: outputUrl,
-    ext: outputFileType.ext,
+  // const { convert, outputUrl, outputSize } = useConvertFile({
+  //   file: videoFile,
+  //   size,
+  //   fps,
+  //   outputFileType,
+  // });
+  // const downloadFile = useDownloadFile({
+  //   filename,
+  //   url: outputUrl,
+  //   ext: outputFileType.ext,
+  // });
+
+  // File drop handling
+  const onDrop = React.useCallback(
+    async (files: File[]) => {
+      const file = files[0];
+      if (!file || isConverting) return;
+
+      let outputUrl = "";
+      try {
+        setIsConverting(true);
+
+        const cleanedSize = (() => {
+          const s = parseInt(size) || 0;
+          return s <= 0 ? 200 : s;
+        })();
+        const cleanedFps = (() => {
+          const f = parseInt(fps) || 0;
+          return f <= 0 ? 15 : f;
+        })();
+
+        // Write the file to memory (so FFMPEG can operate on it)
+        await ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
+
+        const ext = outputFileType.ext;
+        const outputFileName = `output.${ext}`;
+
+        // Do the converstion
+        if (ext === "gif") {
+          await ffmpeg.run(
+            "-i",
+            "input.mp4",
+            "-vf",
+            `fps=${cleanedFps},scale=${cleanedSize}:-1`,
+            outputFileName,
+          );
+        } else if (ext === "mp4") {
+          await ffmpeg.run("-i", "input.mp4", outputFileName);
+        }
+
+        // Generate output URL for download
+        const data = ffmpeg.FS("readFile", outputFileName);
+        const outputBlob = new Blob([data.buffer], {
+          type: outputFileType.mimeType,
+        });
+        outputUrl = URL.createObjectURL(outputBlob);
+
+        // Handle downloading
+        const link = document.createElement("a");
+        link.href = outputUrl;
+        link.download = `${filename}.${ext}`;
+
+        document.body.appendChild(link);
+        link.dispatchEvent(new MouseEvent("click", { bubbles: false }));
+
+        // S TODO: This should happen in a "finally" for safety
+        document.body.removeChild(link);
+      } catch {
+      } finally {
+        URL.revokeObjectURL(outputUrl);
+        setIsConverting(false);
+      }
+    },
+    [
+      filename,
+      fps,
+      isConverting,
+      outputFileType.ext,
+      outputFileType.mimeType,
+      size,
+    ],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 1,
+    accept: ["video/mp4", "video/mov", "video/*"],
   });
 
   // Main markup
@@ -51,56 +137,97 @@ export const App: React.FC = () => {
       </div>
       <div className="container max-w-3xl px-2 -mt-24">
         <div className="bg-white rounded shadow-lg">
-          <HeaderNav hasFile={!!videoFile} />
           <div className="p-4">
-            <Route
-              render={({ location }) => (
-                <AnimatePresence exitBeforeEnter initial={false}>
-                  <Switch location={location} key={location.pathname}>
-                    <Route path={ROUTES.CHOOSE_FILE} exact>
-                      <ChooseFilePage
-                        videoUrl={videoUrl}
-                        setVideoFile={setVideoFile}
-                      />
-                    </Route>
-                    <Route path={ROUTES.CONVERSION_OPTIONS} exact>
-                      <OptionsPage
-                        hasFile={!!videoFile}
-                        {...{
-                          outputFileType,
-                          setOutputFileType,
-                          size,
-                          setSize,
-                          fps,
-                          setFps,
-                          filename,
-                          setFilename,
-                        }}
-                      />
-                    </Route>
-                    <Route path={ROUTES.CONVERT} exact>
-                      <ConvertPage
-                        hasFile={!!videoFile}
-                        {...{
-                          convert,
-                          outputUrl,
-                          outputSize,
-                          outputFileType,
-                          isConverting,
-                          downloadFile,
-                          isFFMPEGReady,
-                          filename,
-                          setFilename,
-                        }}
-                      />
-                    </Route>
-                    <Route path={ROUTES.HOME}>
-                      <HomePage />
-                    </Route>
-                  </Switch>
-                </AnimatePresence>
+            <PageTitle>Conversion Options</PageTitle>
+            <Spacer />
+            {/* Configuration Options*/}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FancySelect
+                title="File Type"
+                options={FileTypes.map(t => ({ title: t.title, value: t.ext }))}
+                value={outputFileType.ext}
+                onSelect={v =>
+                  setOutputFileType(
+                    FileTypes.find(t => t.ext === v) || FileTypes[0],
+                  )
+                }
+              />
+              <FancyInput
+                title="Output Filename"
+                type="text"
+                suffix={`.${outputFileType.ext}`}
+                value={filename}
+                onChange={e =>
+                  setFilename((e.target as HTMLInputElement).value)
+                }
+              />
+              <AnimatePresence initial={false}>
+                {outputFileType.ext === "gif" && (
+                  <motion.div
+                    className="sm:col-span-2 grid sm:grid-cols-2 gap-4"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <FancyInput
+                      title="Width"
+                      type="number"
+                      value={size}
+                      onChange={e =>
+                        setSize((e.target as HTMLInputElement).value)
+                      }
+                      suffix="px"
+                    />
+                    <FancyInput
+                      title="FPS"
+                      type="number"
+                      value={fps}
+                      onChange={e =>
+                        setFps((e.target as HTMLInputElement).value)
+                      }
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            {/* End Configuration */}
+            <Spacer size="xl" />
+            {/* Dropper */}
+            <PageTitle>Choose File</PageTitle>
+            <Spacer />
+            <div
+              {...getRootProps()}
+              className={classNames(
+                "border-2 border-primary-700 rounded p-3 overflow-hidden flex flex-col justify-center items-center transition-all duration-150 cursor-pointer hover:bg-gray-50",
+                isDragActive && "shadow-inner",
               )}
-            />
+            >
+              <input {...getInputProps()} />
+              <motion.div
+                className={classNames(
+                  "rounded-full w-20 h-20 border-primary-700 border-2 flex justify-center items-center transition-colors duration-150",
+                  isDragActive
+                    ? "bg-primary-700 text-white"
+                    : "text-primary-700",
+                  !videoUrl && "",
+                )}
+                animate={{
+                  scale: isDragActive ? 0.9 : 1,
+                }}
+              >
+                <FaFileImport className="text-3xl" />
+              </motion.div>
+              <Spacer />
+              <div className="font-bold text-primary-700">
+                {isDragActive ? (
+                  <span>Drop file</span>
+                ) : videoUrl ? (
+                  <span>Change video</span>
+                ) : (
+                  <span>Choose file</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
