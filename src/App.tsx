@@ -8,6 +8,7 @@ import { OptionsPage } from "./pages/Options.page";
 import { ConvertPage } from "./pages/Convert.page";
 import { FileTypeConfig, FileTypes } from "./consts";
 import { HeaderNav } from "./components/HeaderNav";
+import { AnimatePresence } from "framer-motion";
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -21,7 +22,7 @@ export const App: React.FC = () => {
   const [outputFileType, setOutputFileType] = React.useState<FileTypeConfig>(
     FileTypes[0],
   );
-  const [filename, setFilename] = React.useState("mygif");
+  const [filename, setFilename] = React.useState("myfile");
 
   // Util
   const isFFMPEGReady = useLoadFFMPEG();
@@ -42,56 +43,64 @@ export const App: React.FC = () => {
 
   // Main markup
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pb-24">
       <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
         <div className="container max-w-3xl py-12 px-2">
           <div className="text-5xl font-bold">Video Converter</div>
         </div>
       </div>
-      <div className="container max-w-3xl px-2 -my-24">
-        <div className="bg-white rounded shadow">
+      <div className="container max-w-3xl px-2 -mt-24">
+        <div className="bg-white rounded shadow-lg">
           <HeaderNav hasFile={!!videoFile} />
           <div className="p-4">
-            <Switch>
-              <Route path={ROUTES.CHOOSE_FILE}>
-                <ChooseFilePage
-                  videoUrl={videoUrl}
-                  setVideoFile={setVideoFile}
-                />
-              </Route>
-              <Route path={ROUTES.CONVERSION_OPTIONS}>
-                <OptionsPage
-                  hasFile={!!videoFile}
-                  {...{
-                    outputFileType,
-                    setOutputFileType,
-                    size,
-                    setSize,
-                    fps,
-                    setFps,
-                    filename,
-                    setFilename,
-                  }}
-                />
-              </Route>
-              <Route path={ROUTES.CONVERT}>
-                <ConvertPage
-                  hasFile={!!videoFile}
-                  {...{
-                    convert,
-                    outputUrl,
-                    outputSize,
-                    outputFileType,
-                    isConverting,
-                    downloadFile,
-                    isFFMPEGReady,
-                  }}
-                />
-              </Route>
-              <Route path={ROUTES.HOME}>
-                <HomePage />
-              </Route>
-            </Switch>
+            <Route
+              render={({ location }) => (
+                <AnimatePresence exitBeforeEnter initial={false}>
+                  <Switch location={location} key={location.pathname}>
+                    <Route path={ROUTES.CHOOSE_FILE} exact>
+                      <ChooseFilePage
+                        videoUrl={videoUrl}
+                        setVideoFile={setVideoFile}
+                      />
+                    </Route>
+                    <Route path={ROUTES.CONVERSION_OPTIONS} exact>
+                      <OptionsPage
+                        hasFile={!!videoFile}
+                        {...{
+                          outputFileType,
+                          setOutputFileType,
+                          size,
+                          setSize,
+                          fps,
+                          setFps,
+                          filename,
+                          setFilename,
+                        }}
+                      />
+                    </Route>
+                    <Route path={ROUTES.CONVERT} exact>
+                      <ConvertPage
+                        hasFile={!!videoFile}
+                        {...{
+                          convert,
+                          outputUrl,
+                          outputSize,
+                          outputFileType,
+                          isConverting,
+                          downloadFile,
+                          isFFMPEGReady,
+                          filename,
+                          setFilename,
+                        }}
+                      />
+                    </Route>
+                    <Route path={ROUTES.HOME}>
+                      <HomePage />
+                    </Route>
+                  </Switch>
+                </AnimatePresence>
+              )}
+            />
           </div>
         </div>
       </div>

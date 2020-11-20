@@ -5,10 +5,7 @@ export const FancyInput: React.FC<{ title: string } & React.HTMLProps<
 >> = ({ title, ...rest }) => {
   return (
     <div>
-      <label
-        htmlFor={title}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={title} className="block font-medium text-gray-700">
         {title}
       </label>
       <div className="mt-1">
