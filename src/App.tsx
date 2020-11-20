@@ -115,7 +115,11 @@ export const App: React.FC = () => {
       <div className="min-h-screen bg-gray-100 pb-24">
         <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
           <div className="container max-w-3xl py-12 px-2">
-            <div className="text-5xl font-serif font-bold">Video Converter</div>
+            <div className="text-5xl font-serif font-bold">GifMaker</div>
+            <div className="max-w-xl text-lg">
+              Convert your video files <strong>inside this browser tab</strong>.
+              All local. No trips to the server.
+            </div>
           </div>
         </div>
         <div className="container max-w-3xl px-2 -mt-24">
