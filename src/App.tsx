@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { FileTypeConfig, FileTypes } from "./consts";
+import { FileExt, FileTypeConfig, FileTypes } from "./consts";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageTitle } from "./components/PageTitle";
 import { Spacer } from "./components/Spacer";
@@ -10,6 +10,7 @@ import { useDropzone } from "react-dropzone";
 import classNames from "classnames";
 import { FaFileImport } from "react-icons/all";
 import { LoadingClock } from "./components/LoadingClock";
+import { useLocallyStoredState } from "./useLocallyStoredState";
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -18,12 +19,16 @@ const ffmpeg = createFFmpeg({ log: true });
  */
 export const App: React.FC = () => {
   // Local state
-  const [size, setSize] = React.useState("250");
-  const [fps, setFps] = React.useState("30");
-  const [outputFileType, setOutputFileType] = React.useState<FileTypeConfig>(
-    FileTypes[0],
+  const [size, setSize] = useLocallyStoredState("size", "500");
+  const [fps, setFps] = useLocallyStoredState("fps", "15");
+  const [outputFileExt, setOutputFileExt] = useLocallyStoredState<FileExt>(
+    "fileext",
+    FileTypes[0].ext,
   );
-  const [filename, setFilename] = React.useState("myfile");
+  const outputFileType = React.useMemo(
+    () => FileTypes.find(t => t.ext === outputFileExt) || FileTypes[0],
+    [outputFileExt],
+  );
   const [isConverting, setIsConverting] = React.useState(false);
 
   // Util
@@ -52,7 +57,7 @@ export const App: React.FC = () => {
         await ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
 
         const ext = outputFileType.ext;
-        const outputFileName = `output.${ext}`;
+        const outputFileName = file.name.replace(/\.[^.]+$/, `.${ext}`);
 
         // Do the converstion
         if (ext === "gif") {
@@ -78,7 +83,7 @@ export const App: React.FC = () => {
         const downloadFile = () => {
           const link = document.createElement("a");
           link.href = outputUrl;
-          link.download = `${filename}.${ext}`;
+          link.download = outputFileName;
 
           document.body.appendChild(link);
           link.dispatchEvent(new MouseEvent("click", { bubbles: false }));
@@ -94,14 +99,7 @@ export const App: React.FC = () => {
         setIsConverting(false);
       }
     },
-    [
-      filename,
-      fps,
-      isConverting,
-      outputFileType.ext,
-      outputFileType.mimeType,
-      size,
-    ],
+    [fps, isConverting, outputFileType.ext, outputFileType.mimeType, size],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -117,7 +115,7 @@ export const App: React.FC = () => {
       <div className="min-h-screen bg-gray-100 pb-24">
         <div className="bg-gradient-to-b from-primary-700 to-primary-500 text-white font-thin pb-24">
           <div className="container max-w-3xl py-12 px-2">
-            <div className="text-5xl font-bold">Video Converter</div>
+            <div className="text-5xl font-serif font-bold">Video Converter</div>
           </div>
         </div>
         <div className="container max-w-3xl px-2 -mt-24">
@@ -127,28 +125,17 @@ export const App: React.FC = () => {
               <Spacer />
               {/* Configuration Options*/}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FancySelect
-                  title="File Type"
-                  options={FileTypes.map(t => ({
-                    title: t.title,
-                    value: t.ext,
-                  }))}
-                  value={outputFileType.ext}
-                  onSelect={v =>
-                    setOutputFileType(
-                      FileTypes.find(t => t.ext === v) || FileTypes[0],
-                    )
-                  }
-                />
-                <FancyInput
-                  title="Output Filename"
-                  type="text"
-                  suffix={`.${outputFileType.ext}`}
-                  value={filename}
-                  onChange={e =>
-                    setFilename((e.target as HTMLInputElement).value)
-                  }
-                />
+                <div className="sm:col-span-2">
+                  <FancySelect
+                    title="Output File Type"
+                    options={FileTypes.map(t => ({
+                      title: t.title,
+                      value: t.ext,
+                    }))}
+                    value={outputFileType.ext}
+                    onSelect={v => setOutputFileExt(v as FileExt)}
+                  />
+                </div>
                 <AnimatePresence initial={false}>
                   {outputFileType.ext === "gif" && (
                     <motion.div
