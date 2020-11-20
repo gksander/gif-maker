@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { FileExt, FileTypeConfig, FileTypes } from "./consts";
+import { FileExt, FileTypes } from "./consts";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageTitle } from "./components/PageTitle";
 import { Spacer } from "./components/Spacer";
