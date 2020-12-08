@@ -34,7 +34,7 @@
     "build": "yarn build:css && yarn react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "build:css": "NODE_ENV=production postcss src/styles/tailwind.css -o src/styles/index.css",
+    "build:css": "NODE_ENV=production PUBLIC_URL=https://gif-maker.gksander.com postcss src/styles/tailwind.css -o src/styles/index.css",
     "watch:css": "NODE_ENV=development postcss src/styles/tailwind.css -o src/styles/index.css --watch"
   },
   "eslintConfig": {
