@@ -11,6 +11,7 @@ import classNames from "classnames";
 import { FaFileImport } from "react-icons/all";
 import { LoadingClock } from "./components/LoadingClock";
 import { useLocallyStoredState } from "./useLocallyStoredState";
+import { AlertMessage } from "./components/AlertMessage";
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
     [outputFileExt],
   );
   const [isConverting, setIsConverting] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState("");
 
   // Util
   const isFFMPEGReady = useLoadFFMPEG();
@@ -43,6 +45,7 @@ export const App: React.FC = () => {
       let outputUrl = "";
       try {
         setIsConverting(true);
+        setAlertMessage("");
 
         const cleanedSize = (() => {
           const s = parseInt(size) || 0;
@@ -93,7 +96,11 @@ export const App: React.FC = () => {
         };
 
         downloadFile();
+        setAlertMessage("Check your downloads.");
       } catch {
+        setAlertMessage(
+          "Something went wrong during the conversion process. Try again.",
+        );
       } finally {
         URL.revokeObjectURL(outputUrl);
         setIsConverting(false);
@@ -243,6 +250,32 @@ export const App: React.FC = () => {
               <Spacer />
               <span className="font-bold">Converting file...</span>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Alert/toast */}
+      <AnimatePresence initial={false}>
+        {!!alertMessage && (
+          <motion.div
+            className="fixed bottom-3 left-3 right-3 sm:right-1/2 lg:right-2/3"
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              transition: { duration: 0.3 },
+            }}
+            exit={{
+              opacity: 0,
+              y: 50,
+              scale: 0.8,
+              transition: { duration: 0.3 },
+            }}
+          >
+            <AlertMessage
+              message={alertMessage}
+              onDismiss={() => setAlertMessage("")}
+            />
           </motion.div>
         )}
       </AnimatePresence>
