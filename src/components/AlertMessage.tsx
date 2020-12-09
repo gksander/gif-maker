@@ -13,7 +13,7 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({
 }) => {
   const isSuccess = React.useMemo(() => /download/i.test(message), [message]);
   const title = React.useMemo(
-    () => (isSuccess ? "Converstion completed!" : "Uh oh..."),
+    () => (isSuccess ? "Conversion completed!" : "Uh oh..."),
     [isSuccess],
   );
 

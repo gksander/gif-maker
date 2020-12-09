@@ -6,5 +6,5 @@
 - [x] Disable upload process til FFMPEG is ready
 - [ ] Better DnD UI.
 - [x] Store preference values in LocalStorage
-- [ ] PWA support
-- [ ] Toast indicator when successfully downloaded
+- [x] PWA support
+- [x] Toast indicator when successfully downloaded

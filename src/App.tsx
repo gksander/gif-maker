@@ -12,6 +12,7 @@ import { FaFileImport } from "react-icons/all";
 import { LoadingClock } from "./components/LoadingClock";
 import { useLocallyStoredState } from "./useLocallyStoredState";
 import { AlertMessage } from "./components/AlertMessage";
+import { formatBytes } from "./formatBytes";
 
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -82,6 +83,17 @@ export const App: React.FC = () => {
         });
         outputUrl = URL.createObjectURL(outputBlob);
 
+        const fileSize = await (async () => {
+          try {
+            const size = ((await ffmpeg.FS("stat", outputFileName)?.size) ||
+              0) as number;
+
+            return formatBytes(size);
+          } catch {
+            return "---";
+          }
+        })();
+
         // Handle downloading
         const downloadFile = () => {
           const link = document.createElement("a");
@@ -96,8 +108,11 @@ export const App: React.FC = () => {
         };
 
         downloadFile();
-        setAlertMessage("Check your downloads.");
-      } catch {
+        setAlertMessage(
+          `Check your downloads. A ${fileSize} file should have been downloaded.`,
+        );
+      } catch (e) {
+        console.log(e);
         setAlertMessage(
           "Something went wrong during the conversion process. Try again.",
         );
