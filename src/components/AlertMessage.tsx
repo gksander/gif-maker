@@ -5,11 +5,13 @@ import classNames from "classnames";
 type AlertMessageProps = {
   message: string;
   onDismiss: () => void;
+  previewUrl: string;
 };
 
 export const AlertMessage: React.FC<AlertMessageProps> = ({
   message,
   onDismiss,
+  previewUrl,
 }) => {
   const isSuccess = React.useMemo(() => /download/i.test(message), [message]);
   const title = React.useMemo(
@@ -24,7 +26,7 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({
         isSuccess ? "bg-green-50" : "bg-red-50",
       )}
     >
-      <div className="flex">
+      <div className="flex gap-x-3">
         <div
           className={classNames(
             "flex-shrink-0",
@@ -37,7 +39,7 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({
             <FaTimesCircle className="text-xl" />
           )}
         </div>
-        <div className="ml-3">
+        <div className="flex-grow">
           <h3
             className={classNames(
               "text-sm font-medium",
@@ -70,6 +72,13 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({
             </div>
           </div>
         </div>
+        {!!previewUrl && (
+          <img
+            src={previewUrl}
+            alt="Preview of your downloaded image"
+            className="w-32 h-32 object-contain bg-black bg-opacity-5 rounded"
+          />
+        )}
       </div>
     </div>
   );

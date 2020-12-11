@@ -1,4 +1,4 @@
-export const formatBytes = (bytes = 0, decimals = 0) => {
+export const formatBytes = (bytes = 0, decimals = 2) => {
   if (bytes === 0) return "0 Bytes";
   const k = 1000,
     dm = decimals,

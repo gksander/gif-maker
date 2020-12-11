@@ -33,6 +33,12 @@ export const App: React.FC = () => {
   );
   const [isConverting, setIsConverting] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState("");
+  const [previewUrl, setPreviewUrl] = React.useState("");
+  const revokePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+  };
 
   // Util
   const isFFMPEGReady = useLoadFFMPEG();
@@ -44,6 +50,7 @@ export const App: React.FC = () => {
       if (!file || isConverting) return;
 
       let outputUrl = "";
+      revokePreview();
       try {
         setIsConverting(true);
         setAlertMessage("");
@@ -82,6 +89,9 @@ export const App: React.FC = () => {
           type: outputFileType.mimeType,
         });
         outputUrl = URL.createObjectURL(outputBlob);
+        if (ext === "gif") {
+          setPreviewUrl(outputUrl);
+        }
 
         const fileSize = await (async () => {
           try {
@@ -112,12 +122,11 @@ export const App: React.FC = () => {
           `Check your downloads. A ${fileSize} file should have been downloaded.`,
         );
       } catch (e) {
-        console.log(e);
         setAlertMessage(
           "Something went wrong during the conversion process. Try again.",
         );
       } finally {
-        URL.revokeObjectURL(outputUrl);
+        // URL.revokeObjectURL(outputUrl);
         setIsConverting(false);
       }
     },
@@ -223,7 +232,7 @@ export const App: React.FC = () => {
                   <React.Fragment>
                     <motion.div
                       className={classNames(
-                        "rounded-full w-20 h-20 border-primary-700 border-2 flex justify-center items-center transition-colors duration-150",
+                        "rounded-full w-20 h-20 bg-primary-100 flex justify-center items-center transition-colors duration-150",
                         isDragActive
                           ? "bg-primary-700 text-white"
                           : "text-primary-700",
@@ -272,7 +281,7 @@ export const App: React.FC = () => {
       <AnimatePresence initial={false}>
         {!!alertMessage && (
           <motion.div
-            className="fixed bottom-3 left-3 right-3 sm:right-1/2 lg:right-2/3"
+            className="fixed bottom-3 left-3 right-3 sm:right-1/3 lg:right-1/2 xl:right-2/3"
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{
               opacity: 1,
@@ -289,7 +298,11 @@ export const App: React.FC = () => {
           >
             <AlertMessage
               message={alertMessage}
-              onDismiss={() => setAlertMessage("")}
+              onDismiss={() => {
+                revokePreview();
+                setAlertMessage("");
+              }}
+              previewUrl={previewUrl}
             />
           </motion.div>
         )}
