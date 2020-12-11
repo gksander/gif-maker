@@ -34,11 +34,11 @@ export const App: React.FC = () => {
   const [isConverting, setIsConverting] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState("");
   const [previewUrl, setPreviewUrl] = React.useState("");
-  const revokePreview = () => {
+  const revokePreview = React.useCallback(() => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
-  };
+  }, [previewUrl]);
 
   // Util
   const isFFMPEGReady = useLoadFFMPEG();
@@ -130,7 +130,14 @@ export const App: React.FC = () => {
         setIsConverting(false);
       }
     },
-    [fps, isConverting, outputFileType.ext, outputFileType.mimeType, size],
+    [
+      fps,
+      isConverting,
+      outputFileType.ext,
+      outputFileType.mimeType,
+      revokePreview,
+      size,
+    ],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
