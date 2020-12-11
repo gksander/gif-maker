@@ -75,7 +75,7 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({
         {!!previewUrl && (
           <img
             src={previewUrl}
-            alt="Preview of your downloaded image"
+            alt="Preview of your download"
             className="w-32 h-32 object-contain bg-black bg-opacity-5 rounded"
           />
         )}
