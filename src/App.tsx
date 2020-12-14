@@ -76,7 +76,7 @@ export const App: React.FC = () => {
             "-i",
             "input.mp4",
             "-vf",
-            `fps=${cleanedFps},scale=${cleanedSize}:-1`,
+            `fps=${cleanedFps},scale=${cleanedSize}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`,
             outputFileName,
           );
         } else if (ext === "mp4") {
@@ -122,6 +122,7 @@ export const App: React.FC = () => {
           `Check your downloads. A ${fileSize} file should have been downloaded.`,
         );
       } catch (e) {
+        console.log(e);
         setAlertMessage(
           "Something went wrong during the conversion process. Try again.",
         );
