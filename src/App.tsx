@@ -144,7 +144,7 @@ export const App: React.FC = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxFiles: 1,
-    accept: ["video/mp4", "video/mov", "video/*"],
+    accept: ["video/mp4", "video/mov", "video/*", "image/gif"],
     disabled: !isFFMPEGReady,
   });
 
