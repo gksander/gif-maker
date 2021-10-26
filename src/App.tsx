@@ -95,8 +95,9 @@ export const App: React.FC = () => {
 
         const fileSize = await (async () => {
           try {
-            const size = ((await ffmpeg.FS("stat", outputFileName)?.size) ||
-              0) as number;
+            // const size = ((await ffmpeg.FS("stat", outputFileName)?.size) ||
+            //   0) as number;
+            const size = 0;
 
             return formatBytes(size);
           } catch {

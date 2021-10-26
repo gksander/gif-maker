@@ -1061,15 +1061,15 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@ffmpeg/core@^0.8.4":
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/@ffmpeg/core/-/core-0.8.4.tgz#69062a9b257792a9a8445e1f01e68c3e5e7fe58b"
-  integrity sha512-gEr4qXZpShZpIVUO3hc5Vz7bkk/jLYuzVVQtHluUwrui5eAooQwExOGiEovzLVkRwjJ707/qqfmTrK3r80UkWw==
+"@ffmpeg/core@0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@ffmpeg/core/-/core-0.9.0.tgz#4a999a07671c081216fcc2714f73ec02ddc9c24b"
+  integrity sha512-d931yzQpb8GRgTZr+T7+BMqglPZ1R8FPH3W3UA8I21RzuasRHsMwQ4MQTlS9twjfqvUGIkD8p/8mNToUVN/Yrw==
 
-"@ffmpeg/ffmpeg@^0.9.5":
-  version "0.9.5"
-  resolved "https://registry.yarnpkg.com/@ffmpeg/ffmpeg/-/ffmpeg-0.9.5.tgz#6624747dc331632bc7c581e8d4f2046abc933798"
-  integrity sha512-Vtxgi5C89n36pJ3I1/l6xd2qSwn+s1tAtLvFJ98N9P2ZorBvxXCEwTkt2yL7GuOUX9wpdG/vLFqp7iLso8LDwg==
+"@ffmpeg/ffmpeg@0.9.8":
+  version "0.9.8"
+  resolved "https://registry.yarnpkg.com/@ffmpeg/ffmpeg/-/ffmpeg-0.9.8.tgz#d0292ac1e31f6a070b35e18e50dbbd79f2e2bb08"
+  integrity sha512-QradleJx78hHJBtI1wRsus1L1jxQB3v4h6k8c3CERI9fssm+NSSppuofmsOei7uq7iQEYq3oK9tJNAyEsRoNng==
   dependencies:
     is-url "^1.2.4"
     node-fetch "^2.6.1"
