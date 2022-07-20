@@ -28,7 +28,7 @@ export const App: React.FC = () => {
     FileTypes[0].ext,
   );
   const outputFileType = React.useMemo(
-    () => FileTypes.find(t => t.ext === outputFileExt) || FileTypes[0],
+    () => FileTypes.find((t) => t.ext === outputFileExt) || FileTypes[0],
     [outputFileExt],
   );
   const [isConverting, setIsConverting] = React.useState(false);
@@ -120,7 +120,7 @@ export const App: React.FC = () => {
 
         downloadFile();
         setAlertMessage(
-          `Check your downloads. A ${fileSize} file should have been downloaded.`,
+          `Check your downloads. Your new file should have been downloaded.`,
         );
       } catch (e) {
         console.log(e);
@@ -172,12 +172,12 @@ export const App: React.FC = () => {
                 <div className="sm:col-span-2">
                   <FancySelect
                     title="Output File Type"
-                    options={FileTypes.map(t => ({
+                    options={FileTypes.map((t) => ({
                       title: t.title,
                       value: t.ext,
                     }))}
                     value={outputFileType.ext}
-                    onSelect={v => setOutputFileExt(v as FileExt)}
+                    onSelect={(v) => setOutputFileExt(v as FileExt)}
                   />
                 </div>
                 <AnimatePresence initial={false}>
@@ -196,7 +196,7 @@ export const App: React.FC = () => {
                         title="Width"
                         type="number"
                         value={size}
-                        onChange={e =>
+                        onChange={(e) =>
                           setSize((e.target as HTMLInputElement).value)
                         }
                         suffix="px"
@@ -205,7 +205,7 @@ export const App: React.FC = () => {
                         title="FPS"
                         type="number"
                         value={fps}
-                        onChange={e =>
+                        onChange={(e) =>
                           setFps((e.target as HTMLInputElement).value)
                         }
                       />
